@@ -444,6 +444,14 @@ def processar_resumo_mensal_enel(status_controle, admin_ids=None):
         print(f"   ✅ Sucessos: {sucessos}/{len(admin_ids)}")
         
         return resultado
+        
+    except Exception as e:
+        print(f"❌ Erro no resumo mensal: {e}")
+        return {
+            "sucesso": False,
+            "erro": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 
 def _obter_administradores_da_base() -> str:
     """
