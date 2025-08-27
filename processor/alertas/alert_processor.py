@@ -381,7 +381,7 @@ def processar_resumo_mensal_enel(status_controle, admin_ids=None):
         # IDs dos administradores
         if not admin_ids:
             # NOVA LÓGICA: Buscar administradores da base CCB Alerta
-            admin_ids_str = self._obter_administradores_da_base()
+            admin_ids_str = _obter_administradores_da_base()
             admin_ids = [aid.strip() for aid in admin_ids_str.split(",") if aid.strip()]
         
         if not admin_ids:
@@ -444,47 +444,47 @@ def processar_resumo_mensal_enel(status_controle, admin_ids=None):
         print(f"   ✅ Sucessos: {sucessos}/{len(admin_ids)}")
         
         return resultado
+
+def _obter_administradores_da_base() -> str:
+    """
+    Obter IDs dos administradores da base CCB Alerta
     
-    def _obter_administradores_da_base(self) -> str:
-        """
-        Obter IDs dos administradores da base CCB Alerta
+    Returns:
+        str: IDs dos administradores separados por vírgula
+    """
+    try:
+        import sqlite3
+        import os
         
-        Returns:
-            str: IDs dos administradores separados por vírgula
-        """
-        try:
-            import sqlite3
-            import os
+        # Caminho da base CCB Alerta
+        db_path = os.path.join(os.getcwd(), 'alertas_bot.db')
+        
+        if not os.path.exists(db_path):
+            print(f"⚠️ Base CCB Alerta não encontrada: {db_path}")
+            return ""
+        
+        # Conectar e buscar administradores
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT user_id FROM administradores WHERE user_id IS NOT NULL")
+        admins = cursor.fetchall()
+        
+        conn.close()
+        
+        if admins:
+            admin_ids = [str(admin[0]) for admin in admins]
+            admin_ids_str = ",".join(admin_ids)
+            print(f"👥 Administradores encontrados na base: {len(admins)} ({admin_ids_str})")
+            return admin_ids_str
+        else:
+            print(f"⚠️ Nenhum administrador encontrado na base CCB Alerta")
+            return ""
             
-            # Caminho da base CCB Alerta
-            db_path = os.path.join(os.getcwd(), 'alertas_bot.db')
-            
-            if not os.path.exists(db_path):
-                print(f"⚠️ Base CCB Alerta não encontrada: {db_path}")
-                return ""
-            
-            # Conectar e buscar administradores
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            
-            cursor.execute("SELECT user_id FROM administradores WHERE user_id IS NOT NULL")
-            admins = cursor.fetchall()
-            
-            conn.close()
-            
-            if admins:
-                admin_ids = [str(admin[0]) for admin in admins]
-                admin_ids_str = ",".join(admin_ids)
-                print(f"👥 Administradores encontrados na base: {len(admins)} ({admin_ids_str})")
-                return admin_ids_str
-            else:
-                print(f"⚠️ Nenhum administrador encontrado na base CCB Alerta")
-                return ""
-                
-        except Exception as e:
-            print(f"❌ Erro buscando administradores da base: {e}")
-            # Fallback para variável de ambiente se houver erro
-            return os.getenv("ADMIN_IDS", "")
+    except Exception as e:
+        print(f"❌ Erro buscando administradores da base: {e}")
+        # Fallback para variável de ambiente se houver erro
+        return os.getenv("ADMIN_IDS", "")
 
 def testar_alertas_enel():
     """
