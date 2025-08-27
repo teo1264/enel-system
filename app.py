@@ -247,61 +247,6 @@ def alertas_form():
             return redirect('/login')
         
         return render_template('alertas.html')
-                    } catch (error) {
-                        resultadoDiv.innerHTML = `<div class="status error">❌ Erro de conexão: ${error.message}</div>`;
-                    }
-                }
-                
-                async function testarConsumoAlto() {
-                    const resultadoDiv = document.getElementById('resultado');
-                    const limite = document.getElementById('limiteConsumo').value;
-                    
-                    resultadoDiv.innerHTML = '<div class="status info">⚡ Processando alertas de consumo alto... Aguarde...</div>';
-                    
-                    try {
-                        const response = await fetch('/processar-alertas-consumo', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ limite_percentual: parseInt(limite) })
-                        });
-                        const data = await response.json();
-                        
-                        if (data.sucesso) {
-                            let html = '<div class="status success">';
-                            html += '<h3>⚡ Alertas Consumo Alto: PROCESSADOS!</h3>';
-                            html += `<p><strong>🔍 Alertas processados:</strong> ${data.alertas_processados || 0}</p>`;
-                            html += `<p><strong>📤 Alertas enviados:</strong> ${data.alertas_enviados || 0}</p>`;
-                            html += `<p><strong>📊 Limite usado:</strong> ${data.limite_usado}%</p>`;
-                            html += '</div>';
-                            resultadoDiv.innerHTML = html;
-                        } else {
-                            resultadoDiv.innerHTML = `<div class="status error">❌ Erro: ${data.erro || 'Falha processando alertas'}</div>`;
-                        }
-                    } catch (error) {
-                        resultadoDiv.innerHTML = `<div class="status error">❌ Erro de conexão: ${error.message}</div>`;
-                    }
-                }
-                
-                async function enviarResumoAdmin() {
-                    const resultadoDiv = document.getElementById('resultado');
-                    resultadoDiv.innerHTML = '<div class="status info">📊 Enviando resumo mensal... Aguarde...</div>';
-                    
-                    try {
-                        const response = await fetch('/enviar-resumo-mensal', { method: 'POST' });
-                        const data = await response.json();
-                        
-                        if (data.sucesso) {
-                            let html = '<div class="status success">';
-                            html += '<h3>📊 Resumo Mensal: ENVIADO!</h3>';
-                            html += `<p><strong>👨‍💼 Admins contactados:</strong> ${data.admins_contatados}/${data.total_admins}</p>`;
-                            html += '</div>';
-                            resultadoDiv.innerHTML = html;
-                        } else {
-                            resultadoDiv.innerHTML = `<div class="status error">❌ Erro: ${data.erro || 'Falha enviando resumo'}</div>`;
-                        }
-                    } catch (error) {
-                        resultadoDiv.innerHTML = `<div class="status error">❌ Erro de conexão: ${error.message}</div>`;
-                    }
     except Exception as e:
         logger.error(f"Erro no formulário alertas: {e}")
         return f"Erro: {e}", 500
