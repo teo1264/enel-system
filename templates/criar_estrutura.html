@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Criar Estrutura OneDrive{% endblock %}
+
+{% block content %}
+<h1>📁 Criar Estrutura OneDrive ENEL</h1>
+
+<div class="info">
+    <h3>📋 O que será criado:</h3>
+    <div class="structure">
+/ENEL/
+├── Faturas/
+│   ├── 2024/
+│   │   ├── 01/
+│   │   ├── 02/
+│   │   └── ... (outros meses)
+│   └── 2025/
+└── Planilhas/
+    ├── Consolidadas/
+    └── Backup/
+    </div>
+</div>
+
+<div class="warning-box">
+    <strong>⚠️ Importante:</strong> Esta operação criará a estrutura de pastas no seu OneDrive.
+    Se as pastas já existirem, serão reutilizadas sem problema.
+</div>
+
+<div class="text-center mt-20">
+    <form method="POST" style="display: inline;">
+        <button type="submit" class="button info">📁 Criar Estrutura ENEL</button>
+    </form>
+    <a href="/" class="button secondary">🏠 Voltar</a>
+</div>
+
+<div id="resultado" class="mt-20"></div>
+{% endblock %}

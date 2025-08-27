@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Upload Token{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>🔑 Upload Token ENEL</h1>
+    
+    <div class="info">
+        <h3>📋 Como obter o token.json:</h3>
+        <ol>
+            <li>Execute o script de autenticação local</li>
+            <li>Copie o arquivo token.json gerado</li>
+            <li>Faça upload aqui de forma segura</li>
+            <li>Token será criptografado automaticamente</li>
+        </ol>
+    </div>
+    
+    <div class="warning-box">
+        <strong>⚠️ Segurança:</strong> O token é criptografado e salvo no persistent storage.
+        Apenas este sistema tem acesso aos dados.
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-area">
+            <h3>📎 Selecione o arquivo token.json</h3>
+            <input type="file" name="token_file" accept=".json" required class="input" style="margin: 10px;">
+            <br><br>
+            <button type="submit" class="button enel-color">🔐 Upload e Criptografar</button>
+        </div>
+    </form>
+    
+    <div class="text-center mt-20">
+        <a href="/" class="button secondary">🏠 Voltar Dashboard</a>
+    </div>
+</div>
+
+<style>
+.upload-area { 
+    border: 2px dashed #ff6b35; 
+    padding: 30px; 
+    text-align: center; 
+    border-radius: 8px; 
+    margin: 20px 0; 
+}
+</style>
+{% endblock %}

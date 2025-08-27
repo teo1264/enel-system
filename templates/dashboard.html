@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Dashboard{% endblock %}
+
+{% block content %}
+<h1>⚡ Sistema ENEL - Gerenciador de Faturas</h1>
+<div class="status success">✅ Sistema autenticado e funcionando!</div>
+
+<div class="info">
+   <h3>📊 Funcionalidades ENEL:</h3>
+   <ul>
+       <li>✅ Download automático de emails ENEL</li>
+       <li>✅ Remoção de proteção PDF (senha 05150)</li>
+       <li>✅ Extração completa de dados das faturas</li>
+       <li>✅ Geração de planilhas Excel organizadas</li>
+       <li>✅ Renomeação para integração SIGA</li>
+       <li>✅ Interface web responsiva</li>
+       <li>✅ Deploy seguro no Render</li>
+  </ul>
+</div>
+
+<h3>🔧 Ações Disponíveis:</h3>
+<div class="text-center">
+    <a href="/diagnostico-pasta" class="button">📊 Diagnóstico Pasta ENEL</a>
+    <a href="/criar-estrutura-onedrive" class="button info">📁 Criar Estrutura OneDrive</a>
+    <a href="/processar-emails-form" class="button enel-color">⚡ Processar Faturas</a>
+    <a href="/status-controle-mensal" class="button success">📋 Status Controle Mensal</a>
+    <a href="/alertas-form" class="button danger">🚨 Sistema Alertas</a>
+    <a href="/test-onedrive" class="button secondary">🧪 Teste OneDrive</a>
+    <a href="/upload-token" class="button purple">🔑 Upload Token</a>
+    <a href="/logout" class="button danger">🚪 Logout</a>
+</div>
+
+<div class="info mt-20 text-center">
+    <small>⚡ Sistema ENEL Web<br>
+    🔧 Tesouraria ADM - Deploy Render</small>
+</div>
+{% endblock %}

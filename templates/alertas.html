@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Alertas{% endblock %}
+
+{% block content %}
+<h1>🚨 Sistema de Alertas ENEL</h1>
+
+<div class="status info">
+    <h3>📱 Funcionalidades de Alertas</h3>
+    <ul>
+        <li>✅ Alertas de faturas pendentes via Telegram</li>
+        <li>✅ Alertas de consumo elevado automático</li>
+        <li>✅ Resumos mensais para administradores</li>
+        <li>✅ Envio de PDFs anexados (faturas)</li>
+        <li>✅ Integração com base CCB Alerta Bot</li>
+        <li>✅ Mensagens formatadas e personalizadas</li>
+    </ul>
+</div>
+
+<div class="warning-box">
+    <strong>⚠️ Configuração necessária:</strong> Este sistema requer:
+    <ul>
+        <li>TELEGRAM_BOT_TOKEN configurado</li>
+        <li>Administradores cadastrados na base CCB Alerta</li>
+        <li>ONEDRIVE_ALERTA_ID configurado (base CCB)</li>
+        <li>Planilha de relacionamento ENEL disponível</li>
+    </ul>
+</div>
+
+<h3>🧪 Testes do Sistema</h3>
+<div class="text-center">
+    <button onclick="testarAlertas()" class="button info">🧪 Testar Sistema Completo</button>
+    <button onclick="testarConsumoAlto()" class="button warning">⚡ Testar Alertas Consumo</button>
+    <button onclick="enviarResumoAdmin()" class="button success">📊 Enviar Resumo Admin</button>
+</div>
+
+<h3>⚙️ Configuração de Limites</h3>
+<div class="form-group">
+    <label for="limiteConsumo">Limite percentual consumo alto:</label>
+    <input type="number" id="limiteConsumo" value="150" min="100" max="300" class="input">
+    <small class="text-muted">% (padrão: 150%)</small>
+</div>
+
+<div id="resultado" class="mt-20"></div>
+
+<div class="text-center mt-20">
+    <a href="/" class="button secondary">🏠 Voltar Dashboard</a>
+</div>
+{% endblock %}

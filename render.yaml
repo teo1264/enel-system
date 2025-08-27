@@ -1,0 +1,121 @@
+# 🚀 ENEL Sistema - Configuração Render Deploy
+# 
+# Configuração para deploy do sistema ENEL no Render
+# Baseado no BRK funcionando com adaptações específicas
+
+services:
+  - type: web
+    name: enel-sistema
+    env: python
+    plan: free
+    
+    # 📦 Build Configuration
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    
+    # 🌐 Network Configuration  
+    healthCheckPath: /health
+    
+    # 📁 Persistent Storage (CRÍTICO para SQLite + tokens + PDFs)
+    disk:
+      name: enel-storage
+      mountPath: /opt/render/project/storage
+      sizeGB: 1
+    
+    # 🔒 Environment Variables (Configure no Dashboard do Render)
+    envVars:
+      - key: MICROSOFT_CLIENT_ID
+        sync: false  # Configurar manualmente no Dashboard
+      
+      - key: PASTA_ENEL_ID  
+        sync: false  # Configurar manualmente no Dashboard
+        
+      - key: ONEDRIVE_ROOT_ID
+        sync: false  # ID da raiz OneDrive
+        
+      - key: ONEDRIVE_PASTA_ENEL_ID
+        sync: false  # ID da pasta /ENEL/
+        
+      - key: ONEDRIVE_PASTA_FATURAS_ENEL_ID
+        sync: false  # ID da pasta /ENEL/Faturas/
+        
+      - key: ONEDRIVE_PASTA_PLANILHAS_ENEL_ID
+        sync: false  # ID da pasta /ENEL/Planilhas/
+        
+      - key: MICROSOFT_TENANT_ID
+        value: consumers  # Valor padrão para contas pessoais
+        
+      - key: SENHA_PDF_ENEL
+        value: "05150"  # Senha padrão ENEL
+        
+      - key: PORT
+        value: 8080  # Render define automaticamente
+        
+      - key: SECRET_KEY
+        sync: false  # Gerar chave secreta no Dashboard
+        
+    # 🔄 Auto Deploy
+    autoDeploy: true
+    
+    # 📋 Configurações Adicionais
+    region: oregon  # Região padrão (pode alterar)
+    
+    # 🛡️ Health Check
+    healthCheckPath: /health
+    healthCheckGracePeriod: 30s
+
+# 📝 Instruções de Deploy ENEL:
+#
+# 1. ESTRUTURA CRIADA:
+#    - app.py → Interface Flask principal
+#    - auth/microsoft_auth.py → Autenticação Microsoft Graph
+#    - processor/email_processor.py → Download de emails ENEL
+#    - processor/pdf_processor.py → Processamento PDFs
+#    - requirements.txt → Dependências
+#
+# 2. VARIÁVEIS OBRIGATÓRIAS (configurar no Dashboard):
+#    - MICROSOFT_CLIENT_ID = seu_client_id_azure
+#    - PASTA_ENEL_ID = id_da_pasta_enel_no_outlook
+#    - SECRET_KEY = chave_secreta_flask (gerar)
+#
+# 3. VARIÁVEIS OPCIONAIS:
+#    - ONEDRIVE_ENEL_ID = para salvar planilhas no OneDrive
+#    - SENHA_PDF_ENEL = senha PDFs (padrão: 05150)
+#
+# 4. ENDPOINTS DISPONÍVEIS APÓS DEPLOY:
+#    - / → Dashboard principal
+#    - /upload-token → Upload seguro do token.json
+#    - /processar-emails-form → Interface processamento
+#    - /diagnostico-pasta → Verificar conectividade
+#    - /health → Health check para monitoramento
+#
+# 5. FLUXO DE USO:
+#    - Deploy no Render → Configurar variáveis → Upload token → Usar interface
+#    - Token será criptografado e salvo no persistent storage
+#    - PDFs processados salvos no storage permanente
+#    - Planilhas Excel geradas automaticamente
+#
+# 6. FUNCIONALIDADES ENEL:
+#    - Download automático emails da pasta ENEL
+#    - Remoção proteção PDFs (senha 05150)
+#    - Extração dados faturas (instalação, NF, valor, consumo)
+#    - Geração planilhas Excel organizadas
+#    - Interface web responsiva
+#
+# 7. DEPLOY PROCESS:
+#    - GitHub push → Auto deploy
+#    - Build → pip install requirements.txt
+#    - Start → python app.py (servidor Flask)
+#    - Health → /health endpoint ativo
+#
+# ⚡ PERFORMANCE OTIMIZADA:
+# - Modules separados = carregamento rápido
+# - Imports condicionais = funciona sem todas dependências
+# - Processamento isolado = melhor debugging
+# - Interface intuitiva = fácil uso
+#
+# 🔮 PREPARADO PARA CRESCIMENTO:
+# - auth/ pronto para diferentes provedores
+# - processor/ modular para novas funcionalidades  
+# - app.py extensível para novas rotas
+# - storage persistente para dados históricos

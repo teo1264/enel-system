@@ -1,0 +1,76 @@
+# ============================================================================
+# SISTEMA ENEL - REQUIREMENTS PARA RENDER DEPLOY
+# ============================================================================
+# Arquivo adaptado do BRK para funcionar no Render
+# Otimizado para deploy web com todas as funcionalidades ENEL
+
+# ==========================================
+# FRAMEWORK WEB (PRINCIPAL)
+# ==========================================
+Flask==3.0.3
+
+# ==========================================
+# DEPENDÊNCIAS CRÍTICAS HTTP
+# ==========================================
+# Comunicação com Microsoft Graph API
+requests==2.31.0
+
+# Manipulação de datas
+python-dateutil==2.8.2
+
+# ==========================================
+# PROCESSAMENTO DE PDFs
+# ==========================================
+# Remoção de proteção de PDFs ENEL
+PyPDF2==3.0.1
+
+# Extração de dados de PDFs
+pdfplumber==0.10.0
+
+# ==========================================
+# PLANILHAS E DADOS
+# ==========================================
+# Formatação Excel (SEM PANDAS - Render não suporta)
+openpyxl==3.1.2
+
+# ==========================================
+# DEPENDÊNCIAS FLASK
+# ==========================================
+Werkzeug==3.0.3
+Jinja2==3.1.4
+MarkupSafe==3.0.2
+itsdangerous==2.2.0
+click==8.1.7
+
+# ==========================================
+# SERVIDOR PARA RENDER
+# ==========================================
+gunicorn==23.0.0
+
+# ==========================================
+# CRIPTOGRAFIA E SEGURANÇA
+# ==========================================
+# Para tokens criptografados (baseado no BRK)
+cryptography==41.0.7
+
+# ==========================================
+# NOTAS RENDER DEPLOY
+# ==========================================
+# 
+# OTIMIZADO PARA:
+# - Deploy automático no Render
+# - Persistent storage para tokens/PDFs
+# - Interface web responsiva
+# - Processamento ENEL completo
+#
+# FUNCIONALIDADES:
+# - Download emails pasta ENEL
+# - Remoção proteção PDFs (05150)
+# - Extração dados faturas
+# - Geração planilhas organizadas
+# - Interface web Flask
+#
+# DEPLOY:
+# - Build: pip install -r requirements.txt
+# - Start: python app.py
+# - Health: /health endpoint

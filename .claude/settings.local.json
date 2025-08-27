@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell:*)",
+      "Bash(find:*)",
+      "Bash(python:*)",
+      "Bash(sqlite3:*)",
+      "Bash(move:*)",
+      "Bash(ren:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "E:\\mnt\\e"
+    ]
+  }
+}

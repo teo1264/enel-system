@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Login{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1>⚡ Sistema ENEL - Login</h1>
+    
+    <div class="info">
+        <p>Sistema autenticado via token Microsoft Graph.</p>
+        <p>Processamento automático de faturas ENEL ativo.</p>
+        <p>Para primeiro uso, faça upload do token.json via dashboard.</p>
+    </div>
+    
+    <div class="mt-20">
+        <a href="/" class="button enel-color">🏠 Dashboard</a>
+        <a href="/upload-token" class="button success">🔑 Upload Token</a>
+    </div>
+</div>
+{% endblock %}

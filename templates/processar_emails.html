@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema ENEL - Processar Emails{% endblock %}
+
+{% block content %}
+<h1>⚡ Processar Emails ENEL</h1>
+
+<div class="status info">
+    <h3>📧 Processamento Completo ENEL</h3>
+    <p>Fluxo automático integrado:</p>
+    <ul>
+        <li>✅ Download de emails da pasta ENEL</li>
+        <li>✅ Download de anexos PDF</li>
+        <li>✅ Remoção de proteção (senha 05150)</li>
+        <li>✅ Extração de dados das faturas</li>
+        <li>✅ Geração de planilhas Excel</li>
+        <li>✅ Organização por PIA vs Demais</li>
+    </ul>
+</div>
+
+<form id="processarForm">
+    <h3>📅 Período para Processar:</h3>
+    
+    <div class="form-group">
+        <label for="diasAtras">Selecione o período:</label>
+        <select id="diasAtras" class="input">
+            <option value="1">Últimas 24 horas</option>
+            <option value="2">Últimos 2 dias</option>
+            <option value="7">Última semana</option>
+            <option value="14">Últimas 2 semanas</option>
+            <option value="30">Último mês</option>
+        </select>
+    </div>
+    
+    <div class="text-center mt-20">
+        <button type="submit" class="button enel-color">⚡ Processar Faturas ENEL</button>
+        <a href="/" class="button secondary">🏠 Voltar</a>
+    </div>
+</form>
+
+<div id="resultado" class="mt-20"></div>
+{% endblock %}

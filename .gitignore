@@ -1,0 +1,89 @@
+# ============================================================================
+# GITIGNORE SISTEMA ENEL - SEGURANÇA E LIMPEZA
+# ============================================================================
+
+# 🔒 ARQUIVOS SENSÍVEIS - NUNCA COMMITAR
+token.json
+*.token
+.env
+.env.local
+config.json
+settings.json
+
+# 📊 BASES DE DADOS - PODEM CONTER DADOS PESSOAIS
+*.db
+*.sqlite
+*.sqlite3
+alertas_bot.db
+controle_mensal.db
+
+# 📄 ARQUIVOS TEMPORÁRIOS E PROCESSADOS
+*.pdf
+*.xlsx
+*.csv
+temp/
+temporarios/
+cache/
+downloads/
+
+# 🐍 PYTHON
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 💻 IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 🖥️ SISTEMA OPERACIONAL
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 📦 NODE (caso tenha dependências JS)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 🔧 LOGS E TEMPORÁRIOS
+*.log
+logs/
+temp/
+tmp/
+
+# 📁 PASTAS DE BACKUP E TESTE
+backup/
+backups/
+test_files/
+exemplos_pdf/
+
+# 🌐 RENDER E DEPLOY
+.render/
+.vercel/
+.netlify/
