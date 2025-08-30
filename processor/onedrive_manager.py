@@ -33,61 +33,198 @@ class OneDriveManagerEnel:
         """
         self.auth = auth_manager
         
-        # IDs das pastas (lidos das variáveis de ambiente - padrão BRK)
-        self.onedrive_root_id = os.getenv('ONEDRIVE_ROOT_ID')
-        self.pasta_enel_id = os.getenv('ONEDRIVE_PASTA_ENEL_ID') 
-        self.pasta_faturas_id = os.getenv('ONEDRIVE_PASTA_FATURAS_ENEL_ID')
-        self.pasta_planilhas_id = os.getenv('ONEDRIVE_PASTA_PLANILHAS_ENEL_ID')
+        # IDs das pastas (corrigido para usar variáveis do Render ENEL)
+        self.pasta_enel_id = os.getenv('ONEDRIVE_ENEL_ID')  # Pasta raiz ENEL
         
-        print(f"📁 OneDrive Manager ENEL inicializado")
-        print(f"🔧 Pasta ENEL ID: {self.pasta_enel_id[:10] + '...' if self.pasta_enel_id else 'NÃO CONFIGURADO'}")
-        print(f"🔧 Pasta Faturas ID: {self.pasta_faturas_id[:10] + '...' if self.pasta_faturas_id else 'NÃO CONFIGURADO'}")
-        print(f"🔧 Pasta Planilhas ID: {self.pasta_planilhas_id[:10] + '...' if self.pasta_planilhas_id else 'NÃO CONFIGURADO'}")
+        # IDs dinâmicos (serão criados/descobertos via API)
+        self._pasta_faturas_id = None
+        self._pasta_planilhas_id = None
+        self._pasta_ano_atual_id = None
+        self._pastas_meses_cache = {}
+        
+        print(f"OneDrive Manager ENEL inicializado")
+        print(f"Pasta ENEL ID: {self.pasta_enel_id[:10] + '...' if self.pasta_enel_id else 'NAO CONFIGURADO'}")
+        print(f"Estrutura sera criada dinamicamente via API")
     
     def garantir_estrutura_completa(self) -> bool:
         """
-        Verificar se variáveis de ambiente estão configuradas (padrão BRK)
+        Criar estrutura OneDrive ENEL via API Microsoft Graph (IGUAL BRK)
         
-        Variáveis necessárias:
-        - ONEDRIVE_ROOT_ID
-        - ONEDRIVE_PASTA_ENEL_ID  
-        - ONEDRIVE_PASTA_FATURAS_ENEL_ID
-        - ONEDRIVE_PASTA_PLANILHAS_ENEL_ID
+        Cria:
+        - /ENEL/2025/
+        - /ENEL/2025/08|09|10/
+        (faturas renomeadas + planilhas na mesma pasta por mês)
         
         Returns:
-            bool: True se todas as variáveis estão configuradas
+            bool: True se estrutura foi criada com sucesso
         """
         try:
-            print(f"🔄 Verificando configuração OneDrive ENEL...")
+            print(f"Criando estrutura OneDrive ENEL via API...")
             
-            # Verificar se todas as variáveis de ambiente estão configuradas
-            variaveis_necessarias = [
-                ('ONEDRIVE_ROOT_ID', self.onedrive_root_id),
-                ('ONEDRIVE_PASTA_ENEL_ID', self.pasta_enel_id),
-                ('ONEDRIVE_PASTA_FATURAS_ENEL_ID', self.pasta_faturas_id),
-                ('ONEDRIVE_PASTA_PLANILHAS_ENEL_ID', self.pasta_planilhas_id)
-            ]
-            
-            faltando = []
-            for nome_var, valor in variaveis_necessarias:
-                if not valor:
-                    faltando.append(nome_var)
-                    print(f"❌ Variável {nome_var} não configurada")
-                else:
-                    print(f"✅ Variável {nome_var}: {valor[:10]}...")
-            
-            if faltando:
-                print(f"❌ Configure as variáveis de ambiente no Render:")
-                for var in faltando:
-                    print(f"   - {var}")
+            # Verificar se temos pasta ENEL configurada
+            if not self.pasta_enel_id:
+                print(f"ERRO: ONEDRIVE_ENEL_ID nao configurado no Render")
                 return False
             
-            print(f"✅ Configuração OneDrive ENEL válida! (Padrão BRK)")
-            return True
+            if not self.auth.access_token:
+                print(f"ERRO: Token de acesso nao disponivel")
+                return False
+            
+            print(f"SUCCESS: Pasta ENEL: {self.pasta_enel_id[:10]}...")
+            
+            headers = {
+                'Authorization': f'Bearer {self.auth.access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # 1. Criar pasta do ano direto na raiz (IGUAL BRK)
+            ano_atual = datetime.now().year
+            pasta_ano_id = self._criar_pasta(str(ano_atual), self.pasta_enel_id, headers)
+            if not pasta_ano_id:
+                return False
+            self._pasta_ano_atual_id = pasta_ano_id
+            
+            # 2. Criar pastas dos meses direto no ano (IGUAL BRK)
+            meses = ["08", "09", "10"]
+            meses_criados = 0
+            
+            for mes in meses:
+                pasta_mes_id = self._criar_pasta(mes, pasta_ano_id, headers)
+                if pasta_mes_id:
+                    self._pastas_meses_cache[f"{ano_atual}-{mes}"] = pasta_mes_id
+                    meses_criados += 1
+                    
+                    # Criar arquivo README no mês explicando estrutura
+                    self._criar_readme_mes(pasta_mes_id, mes, headers)
+            
+            print(f"SUCCESS: Estrutura ENEL criada estilo BRK: {meses_criados} meses")
+            print(f"ESTRUTURA: /ENEL/{ano_atual}/MM/ (faturas + planilhas juntas)")
+            return meses_criados > 0
             
         except Exception as e:
-            print(f"❌ Erro verificando configuração OneDrive ENEL: {e}")
+            print(f"ERRO: Erro criando estrutura OneDrive ENEL: {e}")
             return False
+    
+    def _criar_pasta(self, nome_pasta: str, parent_id: str, headers: dict) -> Optional[str]:
+        """
+        Criar pasta no OneDrive ou retornar ID se já existe
+        
+        Args:
+            nome_pasta: Nome da pasta a criar
+            parent_id: ID da pasta pai
+            headers: Headers de autenticação
+            
+        Returns:
+            str: ID da pasta criada ou existente, None se erro
+        """
+        try:
+            # Tentar criar pasta
+            folder_data = {"name": nome_pasta, "folder": {}}
+            url = f"https://graph.microsoft.com/v1.0/me/drive/items/{parent_id}/children"
+            
+            response = requests.post(url, headers=headers, json=folder_data, timeout=30)
+            
+            if response.status_code in [200, 201]:
+                folder_info = response.json()
+                pasta_id = folder_info['id']
+                print(f"SUCCESS: Pasta '{nome_pasta}' criada: {pasta_id[:10]}...")
+                return pasta_id
+            elif response.status_code == 409:
+                # Pasta já existe, buscar ID
+                print(f"INFO: Pasta '{nome_pasta}' ja existe, buscando ID...")
+                response = requests.get(url, headers=headers, timeout=30)
+                if response.status_code == 200:
+                    children = response.json().get('value', [])
+                    existing_folder = next((item for item in children if item.get('name') == nome_pasta), None)
+                    if existing_folder:
+                        pasta_id = existing_folder['id']
+                        print(f"SUCCESS: Pasta '{nome_pasta}' encontrada: {pasta_id[:10]}...")
+                        return pasta_id
+                
+                print(f"ERRO: Pasta '{nome_pasta}' nao encontrada apos criacao")
+                return None
+            else:
+                print(f"ERRO: Erro criar pasta '{nome_pasta}': HTTP {response.status_code}")
+                return None
+                
+        except Exception as e:
+            print(f"ERRO: Erro criar pasta '{nome_pasta}': {e}")
+            return None
+    
+    def _criar_readme_mes(self, pasta_mes_id: str, mes: str, headers: dict) -> bool:
+        """
+        Criar arquivo README explicando estrutura BRK no mês
+        
+        Args:
+            pasta_mes_id: ID da pasta do mês
+            mes: Número do mês (string)
+            headers: Headers de autenticação
+            
+        Returns:
+            bool: True se arquivo foi criado
+        """
+        try:
+            ano_atual = datetime.now().year
+            
+            # Conteúdo do README
+            conteudo = f"""PASTA ENEL - MÊS {mes}/{ano_atual}
+
+📁 ESTRUTURA IGUAL BRK:
+- Faturas ENEL renomeadas (PDF)
+- Planilha de controle mensal (Excel)
+- AMBOS na mesma pasta
+
+📊 ARQUIVOS ESPERADOS:
+- Faturas: DD-MM-ENEL MM-YYYY - LOCAL - vc. DD-MM-YYYY - R$ XX,XX.pdf
+- Planilha: Controle_ENEL_{ano_atual}_{mes}.xlsx
+
+🔍 ACESSO TESOURARIA:
+✅ Tesouraria tem acesso total a esta pasta
+✅ Pode baixar faturas e planilhas
+✅ Estrutura idêntica ao sistema BRK
+
+Data criação: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+Sistema: ENEL Web Render
+"""
+            
+            nome_arquivo = f"README_ENEL_{ano_atual}_{mes}.txt"
+            upload_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{pasta_mes_id}:/{nome_arquivo}:/content"
+            
+            file_headers = {
+                'Authorization': f'Bearer {self.auth.access_token}',
+                'Content-Type': 'text/plain'
+            }
+            
+            response = requests.put(
+                upload_url,
+                headers=file_headers,
+                data=conteudo.encode('utf-8'),
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                print(f"SUCCESS: README {mes}/{ano_atual} criado (estrutura BRK)")
+                return True
+            else:
+                print(f"ERRO: Erro criar README {mes}: HTTP {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"ERRO: Erro criar README {mes}: {e}")
+            return False
+    
+    def obter_ids_estrutura(self) -> Dict:
+        """
+        Obter IDs da estrutura criada
+        
+        Returns:
+            Dict: IDs das pastas principais
+        """
+        return {
+            "pasta_enel": self.pasta_enel_id,
+            "pasta_faturas": self._pasta_faturas_id,
+            "pasta_planilhas": self._pasta_planilhas_id or "nao_implementado"
+        }
     
     
     def garantir_pasta_mes_ano(self, ano: int, mes: int) -> Optional[str]:
@@ -245,19 +382,6 @@ class OneDriveManagerEnel:
             print(f"❌ Erro upload {nome_arquivo}: {e}")
             return False
     
-    def obter_ids_estrutura(self) -> Dict[str, str]:
-        """
-        Obter IDs de todas as pastas da estrutura
-        
-        Returns:
-            Dict: IDs das pastas principais
-        """
-        return {
-            "onedrive_root": self.onedrive_root_id,
-            "pasta_enel": self.pasta_enel_id,
-            "pasta_faturas": self.pasta_faturas_id,
-            "pasta_planilhas": self.pasta_planilhas_id
-        }
     
     def testar_conectividade(self) -> Dict:
         """

@@ -254,7 +254,7 @@ class DatabaseEnel:
                 "dados_extraidos_ok": extraidos_ok,
                 "competencias_diferentes": competencias,
                 "casas_oracao": casas_oracao,
-                "database_local": os.path.exists(self.db_local),
+                "database_onedrive": True,
                 "ultima_atualizacao": datetime.now().isoformat()
             }
             

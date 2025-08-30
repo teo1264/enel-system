@@ -1,0 +1,29 @@
+{
+    "estrutura_onedrive_enel": {
+        "pasta_raiz": "/ENEL/",
+        "estrutura_anos": "/ENEL/YYYY/",
+        "estrutura_meses": "/ENEL/YYYY/MM/",
+        "observacao": "Estrutura igual BRK: faturas + planilhas na mesma pasta"
+    },
+    "arquivos_essenciais": {
+        "relacionamento": "relação_enel.xlsx",
+        "localizacao_relacionamento": "/ENEL/relação_enel.xlsx (pasta raiz)",
+        "controle_mensal": "Controle_ENEL_YYYY_MM.xlsx",
+        "localizacao_controle": "/ENEL/YYYY/MM/Controle_ENEL_YYYY_MM.xlsx"
+    },
+    "configuracoes": {
+        "senha_pdf_padrao": "05150",
+        "formatos_suportados": [".pdf"],
+        "meses_processamento": ["08", "09", "10", "11", "12"]
+    },
+    "usuarios_acesso": {
+        "tesouraria": {
+            "permissao": "read_write",
+            "acesso_pastas": ["faturas", "planilhas", "controle"]
+        },
+        "sistema_automatico": {
+            "permissao": "full_access",
+            "acesso_pastas": ["*"]
+        }
+    }
+}

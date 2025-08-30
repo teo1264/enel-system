@@ -494,15 +494,15 @@ class PlanilhaManagerEnel:
                 print("⚠️ openpyxl não disponível")
                 return False
             
-            if not self.onedrive.pasta_planilhas_id:
-                print("❌ Pasta planilhas OneDrive não configurada")
+            if not self.onedrive.pasta_enel_id:
+                print("❌ Pasta raiz ENEL OneDrive não configurada")
                 return False
             
-            print(f"📁 Carregando planilha {self.nome_planilha_relacionamento} SEM pandas...")
+            print(f"📁 Carregando planilha {self.nome_planilha_relacionamento} da raiz ENEL (igual BRK)...")
             
-            # Buscar arquivo no OneDrive
+            # Buscar arquivo na pasta raiz ENEL (igual BRK)
             planilha_bytes = self._baixar_arquivo_onedrive(
-                self.onedrive.pasta_planilhas_id, 
+                self.onedrive.pasta_enel_id, 
                 self.nome_planilha_relacionamento
             )
             

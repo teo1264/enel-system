@@ -65,7 +65,7 @@ class PlanilhaManagerEnel:
         self.relacionamentos_dados = []  # List[Dict] - sem pandas
         self.controle_mensal_dados = []  # List[Dict] - sem pandas
         
-        # Cache das planilhas (fallback pandas para ambiente local)
+        # Cache das planilhas OneDrive ENEL
         self.planilha_relacionamento = None
         self.planilha_controle_atual = None
         self.mes_atual = datetime.now().month
@@ -642,11 +642,16 @@ class PlanilhaManagerEnel:
             buffer.seek(0)
             arquivo_bytes = buffer.getvalue()
             
-            # Upload para OneDrive
+            # Upload para OneDrive na mesma pasta das faturas (IGUAL BRK)
+            pasta_mes_id = self.onedrive.garantir_pasta_mes_ano(self.ano_atual, self.mes_atual)
+            if not pasta_mes_id:
+                print(f"❌ Erro: pasta do mês {self.mes_atual:02d}/{self.ano_atual} não encontrada")
+                return False
+                
             sucesso = self.onedrive.upload_arquivo(
                 arquivo_bytes,
                 nome_arquivo,
-                self.onedrive.pasta_planilhas_id
+                pasta_mes_id  # Mesma pasta das faturas
             )
             
             if sucesso:
@@ -694,15 +699,15 @@ class PlanilhaManagerEnel:
                 print("⚠️ openpyxl não disponível")
                 return False
             
-            if not self.onedrive.pasta_planilhas_id:
-                print("❌ Pasta planilhas OneDrive não configurada")
+            if not self.onedrive.pasta_enel_id:
+                print("❌ Pasta raiz ENEL OneDrive não configurada")
                 return False
             
-            print(f"📁 Carregando planilha {self.nome_planilha_relacionamento} SEM pandas...")
+            print(f"📁 Carregando planilha {self.nome_planilha_relacionamento} da raiz ENEL (igual BRK)...")
             
-            # Buscar arquivo no OneDrive
+            # Buscar arquivo na pasta raiz ENEL (igual BRK)
             planilha_bytes = self._baixar_arquivo_onedrive(
-                self.onedrive.pasta_planilhas_id, 
+                self.onedrive.pasta_enel_id, 
                 self.nome_planilha_relacionamento
             )
             
@@ -867,7 +872,7 @@ class PlanilhaManagerEnel:
             buffer.close()
             
             sucesso = self._upload_arquivo_onedrive(
-                self.onedrive.pasta_planilhas_id,
+                self.onedrive.pasta_enel_id,  # Pasta raiz ENEL (igual BRK)
                 self.nome_planilha_relacionamento,
                 planilha_bytes
             )
@@ -889,19 +894,19 @@ class PlanilhaManagerEnel:
     
     def _carregar_planilha_relacionamento_com_pandas(self) -> bool:
         """
-        Versão original com pandas (fallback para ambiente local)
+        DEPRECATED: Método removido - usar apenas OneDrive
         """
         if not PANDAS_AVAILABLE:
             return False
             
         try:
-            if not self.onedrive.pasta_planilhas_id:
-                print("❌ Pasta planilhas OneDrive não configurada")
+            if not self.onedrive.pasta_enel_id:
+                print("❌ Pasta raiz ENEL OneDrive não configurada")
                 return False
             
-            # Buscar arquivo no OneDrive
+            # Buscar arquivo na pasta raiz ENEL (igual BRK)
             planilha_bytes = self._baixar_arquivo_onedrive(
-                self.onedrive.pasta_planilhas_id, 
+                self.onedrive.pasta_enel_id, 
                 self.nome_planilha_relacionamento
             )
             
@@ -1207,10 +1212,11 @@ class PlanilhaManagerEnel:
             buffer.seek(0)
             arquivo_bytes = buffer.getvalue()
             
-            # Upload para OneDrive
-            if self.onedrive and self.onedrive.pasta_planilhas_id:
+            # Upload para OneDrive na mesma pasta das faturas (IGUAL BRK)
+            pasta_mes_id = self.onedrive.garantir_pasta_mes_ano(self.ano_atual, self.mes_atual)
+            if pasta_mes_id:
                 sucesso = self._upload_arquivo_onedrive(
-                    self.onedrive.pasta_planilhas_id,
+                    pasta_mes_id,  # Mesma pasta das faturas
                     nome_arquivo,
                     arquivo_bytes
                 )

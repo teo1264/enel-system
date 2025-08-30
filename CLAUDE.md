@@ -4,44 +4,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a modular Python system for automating ENEL electricity bill management. The system downloads emails from Microsoft Graph API, processes PDF attachments, extracts billing data, and generates Excel spreadsheets organized by location groups (PIA vs others). It's designed for treasury departments that use the SIGA system for bill management.
+This is a Flask web system for automating ENEL electricity bill management. The system downloads emails from Microsoft Graph API, processes PDF attachments, extracts billing data, and generates Excel spreadsheets. All data is stored in OneDrive ENEL for treasury department access. Designed for Render deployment with zero local disk usage.
 
 ## Architecture
 
-The codebase follows a modular structure to avoid circular imports and maintain clear separation of concerns:
+The codebase follows a web-based modular structure:
 
-- **Entry Point**: `main.py` - Single execution point with dependency checking
-- **Configuration**: `config/settings.py` - Centralized constants including API credentials and PDF password
-- **Authentication**: `src/auth/token_manager.py` - OAuth2 token management for Microsoft Graph
-- **Email Processing**: `src/download/email_handler.py` - Downloads emails and attachments from specific ENEL folder
-- **PDF Processing**: `src/pdf/processor.py` - Removes PDF protection, extracts data, generates Excel files, renames PDFs
-- **User Interface**: `src/ui/menu.py` - Tkinter GUI with custom dialog functions
+- **Entry Point**: `app.py` - Flask web application with all routes
+- **Authentication**: `auth/microsoft_auth.py` - OAuth2 token management for Microsoft Graph
+- **Core Processors**: `processor/` directory containing:
+  - `sistema_enel.py` - Main orchestration system
+  - `email_processor.py` - Downloads emails and attachments from ENEL folder  
+  - `pdf_processor.py` - Removes PDF protection, extracts data
+  - `planilha_manager.py` - Excel generation and management
+  - `onedrive_manager.py` - OneDrive structure management
+  - `database_enel.py` - SQLite database for processing control
+- **ENEL Data**: `enel/` directory containing:
+  - `relacionamento_enel.xlsx` - Casa de Oração → Instalação mapping
+  - `config/` - OneDrive structure configurations
 
 ## Key Commands
 
 ### Environment Setup
 ```bash
-# Create dedicated conda environment (recommended)
-conda create -n enel python=3.9
-conda activate enel
-
-# Install dependencies
+# Install dependencies for Render
 pip install -r requirements.txt
 
-# Run the system
-python main.py
+# Run Flask web application
+python app.py
+
+# Or via Gunicorn (Render production)
+gunicorn app:app
 ```
 
 ### Testing Commands
 ```bash
-# Verify critical dependencies
-python -c "import requests, tkinter; print('✅ Critical dependencies OK')"
+# Verify core dependencies
+python -c "import requests, flask; print('✅ Core dependencies OK')"
 
-# Verify optional dependencies
-python -c "import pdfplumber, pandas, openpyxl, PyPDF2; print('✅ Optional dependencies OK')"
+# Verify PDF processing dependencies
+python -c "import PyPDF2, pdfplumber, openpyxl; print('✅ PDF dependencies OK')"
 
-# Test module structure
-python -c "from src.ui.menu import mostrar_menu_principal; print('✅ Modules OK')"
+# Test module imports
+python -c "from processor.sistema_enel import SistemaEnel; print('✅ Modules OK')"
+
+# Test authentication
+python -c "from auth.microsoft_auth import MicrosoftAuth; print('✅ Auth OK')"
 ```
 
 ## Dependencies
@@ -59,30 +67,36 @@ python -c "from src.ui.menu import mostrar_menu_principal; print('✅ Modules OK
 
 ## Important Files
 
-- `token.json` - OAuth2 authentication token (required, not in git)
-- `config/settings.py:14` - CLIENT_ID for Microsoft Graph API
-- `config/settings.py:18` - PASTA_ENEL_ID for specific email folder
-- `config/settings.py:21` - SENHA_PADRAO_PDF for PDF decryption ("05150")
+- `token.json` - OAuth2 authentication token (optional, can upload via web)
+- `enel/relacionamento_enel.xlsx` - Casa de Oração → Instalação mapping
+- `enel/config/onedrive_config.json` - OneDrive structure configuration
+
+## Environment Variables (Render)
+
+- `MICROSOFT_CLIENT_ID` - Microsoft Graph API client ID
+- `PASTA_ENEL_ID` - Specific email folder ID in OneDrive
+- `ONEDRIVE_ENEL_ID` - Root ENEL folder ID in OneDrive
+- `SECRET_KEY` - Flask session secret
 
 ## Code Patterns
 
-The system uses local imports to prevent circular dependencies:
-- UI functions are imported only when needed
-- Each module imports dependencies at function level when required
-- The `tk_messagebox()` function in `src/ui/menu.py:25` provides custom dialog handling
+The system uses web-based imports with proper error handling:
+- Flask routes handle web requests
+- Processors work with OneDrive API exclusively
+- No local file system dependencies
+- All data stored in OneDrive for treasury access
 
 ## Typical Workflow
 
-1. User runs `python main.py`
-2. System checks dependencies and token.json
-3. Tkinter GUI opens with 5 options
-4. Each option calls specific module functions via local imports
-5. System provides automatic flow: download → ask to remove protection → ask to extract data → ask to rename files
+1. User accesses web interface at deployed URL
+2. System authenticates via Microsoft OAuth or token upload
+3. Web dashboard provides processing options
+4. System processes: emails → PDF extraction → Excel generation → OneDrive storage
+5. Treasury team accesses results directly from OneDrive
 
-## Render Deployment Considerations
+## Critical Design Principles
 
-This desktop application needs significant modifications for web deployment:
-- Replace Tkinter GUI with web interface
-- Handle file uploads/downloads differently
-- Modify OAuth flow for web authentication
-- Consider background job processing for PDF operations
+- **ZERO local disk usage** - All data in OneDrive ENEL
+- **Treasury accessibility** - All files accessible by treasury team
+- **Web-based interface** - No desktop dependencies
+- **Render optimized** - Stateless, cloud-ready deployment

@@ -625,7 +625,7 @@ class PDFProcessor:
     
     def _gerar_planilha_consolidada_com_pandas(self) -> Optional[str]:
         """
-        Versão original com pandas (fallback para ambiente local)
+        DEPRECATED: Método removido - usar apenas OneDrive
         """
         if not PANDAS_AVAILABLE:
             return None
