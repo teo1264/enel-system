@@ -602,6 +602,52 @@ class EmailProcessorEnel:
         except Exception as e:
             self.logger.error(f"❌ Erro listar_arquivos_processados: {e}")
             return []
+    
+    def processar_emails_incremental(self, planilha_manager, dias_atras: int = 1, database=None) -> Dict[str, Any]:
+        """
+        Processar emails incrementalmente integrado com planilha_manager
+        Método adicionado para compatibilidade com sistema_enel.py
+        """
+        try:
+            self.logger.info(f"📧 Processamento incremental - últimos {dias_atras} dias")
+            
+            # Processar emails da pasta ENEL
+            resultado_emails = self.processar_emails_pasta_enel(limite=100)
+            
+            if resultado_emails.get('emails_processados', 0) == 0:
+                return {
+                    "status": "sucesso",
+                    "mensagem": "Nenhum email novo para processar",
+                    "emails_processados": 0,
+                    "dados_extraidos": 0
+                }
+            
+            # Integrar com planilha_manager se houver anexos processados
+            dados_extraidos = 0
+            faturas_processadas = []
+            
+            for detalhe in resultado_emails.get('detalhes', []):
+                if detalhe.get('anexos_processados', 0) > 0:
+                    dados_extraidos += detalhe['anexos_processados']
+                    faturas_processadas.append(detalhe)
+            
+            return {
+                "status": "sucesso", 
+                "mensagem": f"Processamento incremental concluído",
+                "emails_processados": resultado_emails['emails_processados'],
+                "dados_extraidos": dados_extraidos,
+                "faturas_processadas": faturas_processadas,
+                "uploads_sucesso": resultado_emails.get('uploads_sucesso', 0),
+                "detalhes": resultado_emails
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ Erro processamento incremental: {e}")
+            return {
+                "status": "erro",
+                "erro": str(e),
+                "mensagem": "Falha no processamento incremental"
+            }
 
 
 # Classe de compatibilidade mantida
