@@ -278,27 +278,23 @@ class EmailProcessorEnel:
                 emails_url = "https://graph.microsoft.com/v1.0/me/messages"
                 self.logger.info("📧 Usando caixa de entrada (fallback)")
             
-            # Parâmetros da consulta
+            # Parâmetros da consulta - SIMPLIFICADOS para evitar InefficientFilter
             params = {
-                '$top': limite,
-                '$select': 'id,subject,receivedDateTime,hasAttachments,from',
-                '$orderby': 'receivedDateTime desc'
+                '$top': limite
             }
             
+            # Usar apenas filtro OU ordenação, não ambos (Microsoft Graph limitação)
             if apenas_com_anexos:
                 params['$filter'] = 'hasAttachments eq true'
+            else:
+                params['$orderby'] = 'receivedDateTime desc'
             
             self.logger.info(f"🔍 Buscando até {limite} emails...")
-            
-            # DEBUG: Log completo da requisição
-            self.logger.info(f"🔍 URL: {emails_url}")
-            self.logger.info(f"🔍 Params: {params}")
             
             response = requests.get(emails_url, headers=headers, params=params, timeout=self.timeout_request)
             
             if response.status_code != 200:
                 self.logger.error(f"❌ Erro buscar emails: {response.status_code}")
-                self.logger.error(f"❌ Response body: {response.text[:500]}")
                 return relatorio
             
             emails = response.json().get('value', [])
